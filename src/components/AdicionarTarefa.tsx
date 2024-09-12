@@ -1,56 +1,84 @@
-import React, { useState } from "react"; // Importa o React e o hook useState
-import { View, Input, IconButton, Text } from 'native-base'; // Importa componentes do Native Base para criar a UI
-import { Ionicons } from '@expo/vector-icons'; // Importa ícones da biblioteca Ionicons
+// Importa os hooks React useState e useEffect
+import React, { useState } from "react";
 
-// Define a interface para as props do componente
-interface AdicionarTarefaProps {
-  onAdicionarTarefa: (tarefa: string) => void; // Função que será chamada quando uma nova tarefa for adicionada
-}
+// Importa os componentes View, Input e IconButton da biblioteca NativeBase
+import { IconButton, Input, View } from 'native-base';
 
-const AdicionarTarefa: React.FC<AdicionarTarefaProps> = ({ onAdicionarTarefa }) => {
-  // Define o estado local 'tarefa' que armazena a tarefa digitada
-  const [tarefa, setTarefa] = useState("");
+// Importa o ícone "add" da biblioteca Ionicons
+import { Ionicons } from '@expo/vector-icons';
 
-  // Função que adiciona a nova tarefa
-  const adicionarTarefa = () => {
-    // Verifica se a string da tarefa não está vazia
-    if (tarefa.trim() !== "") {
-      // Chama a função recebida via props para adicionar a tarefa ao estado global
-      onAdicionarTarefa(tarefa);
-      // Reseta o campo de texto após adicionar a tarefa
-      setTarefa("");
+// Importa o hook useEstadoGlobal do arquivo ../hooks/EstadoGlobal.tsx
+import { useEstadoGlobal } from "../hooks/EstadoGlobal";
+
+// Função componente "AdicionarTarefa"
+const AdicionarTarefa: React.FC = () => {
+
+  // **useState** - Define o estado local "novaTarefa" para armazenar o título da nova tarefa
+  // O estado inicial é uma string vazia ""
+  const [novaTarefa, setNovaTarefa] = useState("");
+
+  // **useEstadoGlobal** - Acessa o contexto global de estado e obtém a função "adicionarTarefa"
+  // Essa função permite adicionar novas tarefas à lista global
+  const { adicionarTarefa } = useEstadoGlobal();
+
+  // **Função handleAdicionarTarefa** - Chamada ao clicar no botão de adicionar tarefa
+  const handleAdicionarTarefa = () => {
+
+    // **Verificação** - Se o campo de nova tarefa não estiver vazio (trim() remove espaços em branco)
+    if (novaTarefa.trim() !== "") {
+
+      // **Adicionar Tarefa** - Chama a função "adicionarTarefa" do contexto global
+      // Passa o título da nova tarefa como parâmetro
+      adicionarTarefa(novaTarefa);
+
+      // **Limpar campo** - Após adicionar a tarefa, limpa o campo de nova tarefa
+      setNovaTarefa("");
     }
   };
 
   return (
-    <View style={{ backgroundColor: '#402291', paddingVertical: 20, paddingHorizontal: 20, paddingTop: 50 }}>
-      {/* Título da lista de tarefas */}
-      <Text fontSize="xl" color="white" mb={4}>Lista de Tarefas Victor Candile</Text>
-
-      {/* Contêiner para o campo de entrada de texto e o botão */}
+    <View
+      style={{
+        backgroundColor: '#1e1e2f', // Cor mais escura para criar contraste
+        paddingVertical: 30,
+        paddingHorizontal: 25,
+        paddingTop: 60,
+      }}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <View style={{ flex: 1, marginRight: 10 }}>
-          {/* Campo de entrada de texto onde o usuário digita a tarefa */}
+        <View style={{ flex: 1, marginRight: 15 }}>
           <Input
-            placeholder="Digite uma tarefa" // Texto que aparece no campo quando ele está vazio
-            placeholderTextColor="white" // Cor do placeholder
-            value={tarefa} // O valor do campo de texto é ligado ao estado 'tarefa'
-            onChangeText={(texto) => setTarefa(texto)} // Atualiza o estado 'tarefa' conforme o usuário digita
-            fontSize={14} // Tamanho da fonte do texto
-            color="white" // Cor do texto
+            placeholder="Digite uma tarefa"
+            placeholderTextColor="#ddd" // Cor de placeholder mais suave
+            value={novaTarefa}
+            onChangeText={setNovaTarefa}
+            fontSize={18}
+            color="white"
+            bgColor="rgba(255, 255, 255, 0.1)" // Fundo translúcido
+            padding={4} // Espaçamento interno maior
+            borderWidth={1}
+            borderColor="rgba(255, 255, 255, 0.3)" // Borda suave
+            borderRadius={10} // Bordas arredondadas
           />
         </View>
-
-        {/* Botão com ícone para adicionar a tarefa */}
         <IconButton
-          icon={<Ionicons name="add" size={24} color="#402291" />} // Ícone de adição
-          colorScheme="light" // Define o esquema de cores
-          onPress={adicionarTarefa} // Chama a função 'adicionarTarefa' ao pressionar o botão
-          style={{ borderRadius: 50, backgroundColor: 'gold' }} // Estilo para o botão, incluindo a cor de fundo e bordas arredondadas
+          icon={<Ionicons name="add" size={24} color="white" />}
+          onPress={handleAdicionarTarefa}
+          style={{
+            borderRadius: 50,
+            backgroundColor: '#ff9a00',
+            padding: 10,
+            shadowColor: '#965A00FF',
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.7,
+            shadowRadius: 6,
+            elevation: 6, // Mais profundidade na sombra
+          }}
         />
       </View>
     </View>
   );
 };
 
-export default AdicionarTarefa; // Exporta o componente para ser usado em outras partes da aplicação
+// Exporta o componente "AdicionarTarefa" para ser usado em outros arquivos
+export default AdicionarTarefa;
