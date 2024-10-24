@@ -1,84 +1,79 @@
-// Importa os hooks React useState e useEffect
 import React, { useState } from "react";
-
-// Importa os componentes View, Input e IconButton da biblioteca NativeBase
-import { IconButton, Input, View } from 'native-base';
-
-// Importa o ícone "add" da biblioteca Ionicons
+import { View, Input, IconButton } from 'native-base';
 import { Ionicons } from '@expo/vector-icons';
-
-// Importa o hook useEstadoGlobal do arquivo ../hooks/EstadoGlobal.tsx
 import { useEstadoGlobal } from "../hooks/EstadoGlobal";
+import AsyncStorage from '@react-native-community/async-storage'; // Para recuperar o token
 
-// Função componente "AdicionarTarefa"
-const AdicionarTarefa: React.FC = () => {
+interface AdicionarTarefaProps {
+  onAdicionarTarefa: () => void; // Função de callback para atualizar a lista de tarefas
+}
 
-  // **useState** - Define o estado local "novaTarefa" para armazenar o título da nova tarefa
-  // O estado inicial é uma string vazia ""
+const AdicionarTarefa: React.FC<AdicionarTarefaProps> = ({ onAdicionarTarefa }) => {
   const [novaTarefa, setNovaTarefa] = useState("");
-
-  // **useEstadoGlobal** - Acessa o contexto global de estado e obtém a função "adicionarTarefa"
-  // Essa função permite adicionar novas tarefas à lista global
   const { adicionarTarefa } = useEstadoGlobal();
 
-  // **Função handleAdicionarTarefa** - Chamada ao clicar no botão de adicionar tarefa
-  const handleAdicionarTarefa = () => {
+  const handleAdicionarTarefa = async () => {
+    if (novaTarefa.trim() === "") return;
 
-    // **Verificação** - Se o campo de nova tarefa não estiver vazio (trim() remove espaços em branco)
-    if (novaTarefa.trim() !== "") {
+    try {
+      const token = await AsyncStorage.getItem('token'); // Recuperar o token de autenticação
+      if (!token) {
+        console.error('Token não encontrado!');
+        return;
+      }
 
-      // **Adicionar Tarefa** - Chama a função "adicionarTarefa" do contexto global
-      // Passa o título da nova tarefa como parâmetro
+      const response = await fetch('http://localhost:3000/api/tarefas', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`, // Adiciona o token JWT ao cabeçalho
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tarefa: novaTarefa }), // Envia a nova tarefa
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao adicionar tarefa');
+      }
+
+      // Se tudo deu certo, adicionar a tarefa no estado global
       adicionarTarefa(novaTarefa);
+      setNovaTarefa(""); // Limpa o campo de input
 
-      // **Limpar campo** - Após adicionar a tarefa, limpa o campo de nova tarefa
-      setNovaTarefa("");
+      onAdicionarTarefa(); // Chama a função passada por prop para atualizar a lista
+    } catch (error) {
+      console.error('Erro ao adicionar tarefa:', error);
     }
   };
 
   return (
-    <View
-      style={{
-        backgroundColor: '#1e1e2f', // Cor mais escura para criar contraste
-        paddingVertical: 30,
-        paddingHorizontal: 25,
-        paddingTop: 60,
+    <View 
+      style={{ 
+        backgroundColor: '#402291', 
+        paddingVertical: 20, 
+        paddingHorizontal: 20, 
+        paddingTop: 50 
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <View style={{ flex: 1, marginRight: 15 }}>
+        <View style={{ flex: 1, marginRight: 10 }}>
           <Input
             placeholder="Digite uma tarefa"
-            placeholderTextColor="#ddd" // Cor de placeholder mais suave
+            placeholderTextColor="white"
             value={novaTarefa}
             onChangeText={setNovaTarefa}
             fontSize={18}
             color="white"
-            bgColor="rgba(255, 255, 255, 0.1)" // Fundo translúcido
-            padding={4} // Espaçamento interno maior
-            borderWidth={1}
-            borderColor="rgba(255, 255, 255, 0.3)" // Borda suave
-            borderRadius={10} // Bordas arredondadas
           />
         </View>
         <IconButton
-          icon={<Ionicons name="add" size={24} color="white" />}
+          icon={<Ionicons name="add" size={24} color="#402291" />}
+          colorScheme="light"
           onPress={handleAdicionarTarefa}
-          style={{
-            borderRadius: 50,
-            backgroundColor: '#ff9a00',
-            padding: 10,
-            shadowColor: '#965A00FF',
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.7,
-            shadowRadius: 6,
-            elevation: 6, // Mais profundidade na sombra
-          }}
+          style={{ borderRadius: 50, backgroundColor: 'gold' }}
         />
       </View>
     </View>
   );
 };
 
-// Exporta o componente "AdicionarTarefa" para ser usado em outros arquivos
 export default AdicionarTarefa;
